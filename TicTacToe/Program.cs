@@ -21,12 +21,14 @@ class Program
     static async Task Main(string[] args)
     {
         await ListaJugadores();
+        //Task.Delay(500);
         await Partidas();
         MostrarGanador();
     }
 
     private static async Task ListaJugadores()
     {
+        //var listaJugadores = await cliente.GetFromJsonAsync<List<string>>($"/jugadors");
         string participantes = await cliente.GetStringAsync("/jugadors");
         var listaJugadores = JsonSerializer.Deserialize<List<string>>(participantes);
 
@@ -48,11 +50,16 @@ class Program
                     }
                     else
                     {
-                        victorias[nombre] = 1;
+                        victorias[nombre] = 0;
                     }
+                    Console.WriteLine("- " + nombre + " de " + pais);
+
                 }
+
             }
         }
+        
+
     }
 
     private static async Task Partidas()
@@ -61,19 +68,18 @@ class Program
         {
             try
             {
-                string partidaJson = await cliente.GetStringAsync($"/partida/{i}");
-                var partida = JsonSerializer.Deserialize<Partida>(partidaJson);
-
-                if (jugadores.ContainsKey(partida.Jugador1) && jugadores.ContainsKey(partida.Jugador2))
+                var partida = await cliente.GetFromJsonAsync<Partida>($"/partida/{i}");
+                
+                if (jugadores.ContainsKey(partida.jugador1) && jugadores.ContainsKey(partida.jugador2))
                 {
                     string ganador = VerGanador(partida.Tauler);
-                    if (ganador == "O" && victorias.ContainsKey(partida.Jugador1))
+                    if (ganador == "O" && victorias.ContainsKey(partida.jugador1))
                     {
-                        victorias[partida.Jugador1]++;
+                        victorias[partida.jugador1]++;
                     }
-                    else if (ganador == "X" && victorias.ContainsKey(partida.Jugador2))
+                    else if (ganador == "X" && victorias.ContainsKey(partida.jugador2))
                     {
-                        victorias[partida.Jugador2]++;
+                        victorias[partida.jugador2]++;
                     }
                 }
             }
@@ -126,10 +132,10 @@ class Program
             }
         }
         
-        Console.WriteLine("Ganador del torneo:");
+        Console.WriteLine($"Ganador/a del torneo:");
         foreach (var ganador in ganadores)
         {
-            Console.WriteLine($"{ganador} de {jugadores[ganador]}");
+            Console.WriteLine($"{ganador} de {jugadores[ganador]} con {maxVictorias} partidas ganadas, ole ole!!");
         }
     }
 }
